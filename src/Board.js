@@ -15,10 +15,17 @@ const DIRECTIONS = {
 }
 
 const IMAGES = {
-    "0": <img src={Dark} className="responsive" />,
-    "1": <img src={Wall} className="responsive" />,
-    "2": <img src={Bulb} className="responsive" />,
-    "3": <img src={Bright} className="responsive" />
+    "0": <img src={Dark} className="responsive" alt="Darkness" />,
+    "1": <img src={Wall} className="responsive" alt="Wall" />,
+    "2": <img src={Bulb} className="responsive" alt="Bulb" />,
+    "3": <img src={Bright} className="responsive" alt="Bright" />
+}
+
+const TYPES_BULB = {
+    "bulbOn": 2,
+    "bright": 3,
+    "wall": 1,
+    "darkness": 0
 }
 
 
@@ -56,9 +63,9 @@ function Board() {
         if (row < 0 || row >= newBoard.length || col < 0 || col >= newBoard[0].length) {
             return newBoard
         }
-        console.log(newBoard)
+
         const cellValue = newBoard[row][col]
-        if (cellValue === 1) {
+        if (cellValue === TYPES_BULB["wall"]) {
             return newBoard
         }
 
@@ -73,35 +80,34 @@ function Board() {
     const changeCell = (row, col) => {
         let newMatrix = structuredClone(matrix)
         const value = newMatrix[row][col]
+        let cellValue, aroundCellValue
 
-        if (value !== 1) {
-            if (value === 0) {
-                const newValue = 3
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
-                newMatrix[row][col] = 2
-            } else if (value === 2) {
-                const newValue = 0
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
-                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
-                newMatrix[row][col] = newValue
+        if (value !== TYPES_BULB["wall"] && value !== TYPES_BULB["bright"]) {
+            if (value === TYPES_BULB["darkness"]) {
+                cellValue = TYPES_BULB["bulbOn"]
+                aroundCellValue = TYPES_BULB["bright"]
+            } else if (value === TYPES_BULB["bulbOn"]) {
+                cellValue = TYPES_BULB["darkness"]
+                aroundCellValue = TYPES_BULB["darkness"]
             }
+
+            newMatrix = floodFill(row, col, newMatrix, aroundCellValue, DIRECTIONS["left"])
+            newMatrix = floodFill(row, col, newMatrix, aroundCellValue, DIRECTIONS["right"])
+            newMatrix = floodFill(row, col, newMatrix, aroundCellValue, DIRECTIONS["top"])
+            newMatrix = floodFill(row, col, newMatrix, aroundCellValue, DIRECTIONS["bottom"])
+            newMatrix[row][col] = cellValue
 
             for (let row = 0; row < newMatrix.length; row++) {
                 for (let col = 0; col < newMatrix[row].length; col++) {
                     const value = newMatrix[row][col]
 
-                    if (value === 2) {
-                        const newValue = 3
+                    if (value === TYPES_BULB["bulbOn"]) {
+                        const newValue = TYPES_BULB["bright"]
                         newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
                         newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
                         newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
                         newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
-                        newMatrix[row][col] = 2
+                        newMatrix[row][col] = TYPES_BULB["bulbOn"]
                     }
                 }
             }
