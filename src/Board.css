@@ -1,0 +1,22 @@
+.main{
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.board {
+    border-color: white;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.cell {
+    border-style: dotted;
+    border-width: 3px;
+    border-color: black;
+    margin-top: 0px;
+}
+.responsive {
+    width: 100%;
+    height: 100%;
+  }
