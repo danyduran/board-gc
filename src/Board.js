@@ -1,4 +1,4 @@
-import React, {useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Wall from './images/wall.png';
 import Dark from './images/dark.jpeg';
 import Bulb from './images/bulb.jpeg';
@@ -8,32 +8,30 @@ import "./Board.css"
 const HEIGHT = 70;
 const WIDTH = 70;
 const DIRECTIONS = {
-    "top": {dirCol: -1, dirRow: 0},
-    "bottom": {dirCol: 1, dirRow: 0},
-    "left": {dirCol: 0, dirRow: -1},
-    "right": {dirCol: 0, dirRow: 1},
+    "top": { dirCol: -1, dirRow: 0 },
+    "bottom": { dirCol: 1, dirRow: 0 },
+    "left": { dirCol: 0, dirRow: -1 },
+    "right": { dirCol: 0, dirRow: 1 },
 }
 
 const IMAGES = {
-    "0": <img src={Dark} className="responsive"/>,
-    "1": <img src={Wall} className="responsive"/>,
-    "2": <img src={Bulb} className="responsive"/>,
-    "3": <img src={Bright} className="responsive"/>
+    "0": <img src={Dark} className="responsive" />,
+    "1": <img src={Wall} className="responsive" />,
+    "2": <img src={Bulb} className="responsive" />,
+    "3": <img src={Bright} className="responsive" />
 }
 
 
-function Cell ({row, col, width, height, value, setBulb}) {
+function Cell({ width, height, value, setBulb }) {
     return (
-        <div className="cell" style={{width: width + "vw", height: height + "%"}} onClick={setBulb}>
+        <div className="cell" style={{ width: width + "vw", height: height + "%" }} onClick={setBulb}>
             {IMAGES[value]}
         </div>
     )
 }
 
 function Board() {
-    const testMatrix = [[0, 0, 1], [0, 0, 0], [1, 0, 0], [0, 0, 0]]
     const [matrix, setMatrix] = useState([]);
-    const [bulbs, setBulbs] = useState({});
 
     const loadFile = (event) => {
         const newMatrix = []
@@ -42,72 +40,62 @@ function Board() {
         reader.onload = async (event) => {
             const text = (event.target.result)
             const lines = text.split("\n")
-            for  (let index in lines) {
+            for (let index in lines) {
                 const cells = lines[index].split(",")
                 newMatrix.push(cells.map((cell) => parseInt(cell)))
             }
 
         };
-        reader.onloadend  = async () => {
+        reader.onloadend = async () => {
             setMatrix(newMatrix)
         }
         reader.readAsText(event.target.files[0])
     }
 
     const floodFill = (row, col, newBoard, value, direction) => {
-        if(row < 0 || row >= newBoard.length || col < 0 || col >= newBoard[0].length){
+        if (row < 0 || row >= newBoard.length || col < 0 || col >= newBoard[0].length) {
             return newBoard
         }
         console.log(newBoard)
         const cellValue = newBoard[row][col]
-        if(cellValue == 1) {
+        if (cellValue === 1) {
             return newBoard
         }
 
         newBoard[row][col] = value
-        const {dirRow, dirCol} = direction
+        const { dirRow, dirCol } = direction
 
-        newBoard = floodFill(row+dirRow, col+dirCol, newBoard, value, direction)
+        newBoard = floodFill(row + dirRow, col + dirCol, newBoard, value, direction)
         return newBoard
 
     }
 
     const changeCell = (row, col) => {
         let newMatrix = structuredClone(matrix)
-        let newBulbs = structuredClone(bulbs)
         const value = newMatrix[row][col]
 
-        if(value != 1){
-            let newValue
-            const keyCol = `col${col}`
-            const keyRow = `row${col}`
-            if(value == 0){
-                newValue = 3
+        if (value !== 1) {
+            if (value === 0) {
+                const newValue = 3
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
                 newMatrix[row][col] = 2
-            }else if(value == 2) {
-                try {
-                    delete newBulbs[keyCol][`${row}${col}`]
-                    delete newBulbs[keyRow][`${row}${col}`]
-                } catch (error) {
-                    console.log(error)
-                }
-                newValue = 0
+            } else if (value === 2) {
+                const newValue = 0
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
                 newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
-                newMatrix[row][col] = 0
+                newMatrix[row][col] = newValue
             }
 
-            for(let row=0; row < newMatrix.length; row++){
-                for(let col=0; col < newMatrix[row].length; col++) {
+            for (let row = 0; row < newMatrix.length; row++) {
+                for (let col = 0; col < newMatrix[row].length; col++) {
                     const value = newMatrix[row][col]
-                    
-                    if(value == 2){ 
+
+                    if (value === 2) {
                         const newValue = 3
                         newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
                         newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
@@ -118,17 +106,16 @@ function Board() {
                 }
             }
 
-            // call and flood and fill
             setMatrix(newMatrix)
         }
     }
 
     const cells = []
-    useMemo(()=>{
-        for(let row=0;row<matrix.length;row++){
+    useMemo(() => {
+        for (let row = 0; row < matrix.length; row++) {
             const widthCell = (WIDTH - 2) / matrix[row].length
             const heightCell = (HEIGHT) / matrix.length
-            for(let col=0; col <  matrix[row].length; col++){
+            for (let col = 0; col < matrix[row].length; col++) {
                 const cell = <Cell
                     key={`cell-${row}${col}`}
                     row={row}
@@ -136,7 +123,7 @@ function Board() {
                     width={widthCell}
                     height={heightCell}
                     value={matrix[row][col]}
-                    setBulb={()=> changeCell(row, col)}
+                    setBulb={() => changeCell(row, col)}
                 />
                 cells.push(cell)
             }
@@ -145,10 +132,9 @@ function Board() {
 
     return (
         <div className='main'>
-            <div className="board" style={{width: WIDTH + "vw", height: HEIGHT + "vh"}}>
+            <div className="board" style={{ width: WIDTH + "vw", height: HEIGHT + "vh" }}>
                 {cells}
             </div>
-            <button onClick={()=>setMatrix(testMatrix)}>load</button>
             <input type="file" onChange={(e) => loadFile(e)}></input>
         </div>
     )
