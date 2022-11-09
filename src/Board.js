@@ -2,6 +2,7 @@ import React, {useMemo, useState } from 'react';
 import Wall from './images/wall.png';
 import Dark from './images/dark.jpeg';
 import Bulb from './images/bulb.jpeg';
+import Bright from './images/bright.jpeg';
 import "./Board.css"
 
 const HEIGHT = 70;
@@ -16,7 +17,8 @@ const DIRECTIONS = {
 const IMAGES = {
     "0": <img src={Dark} className="responsive"/>,
     "1": <img src={Wall} className="responsive"/>,
-    "2": <img src={Bulb} className="responsive"/>
+    "2": <img src={Bulb} className="responsive"/>,
+    "3": <img src={Bright} className="responsive"/>
 }
 
 
@@ -72,32 +74,51 @@ function Board() {
 
     const changeCell = (row, col) => {
         let newMatrix = structuredClone(matrix)
+        let newBulbs = structuredClone(bulbs)
         const value = newMatrix[row][col]
 
         if(value != 1){
             let newValue
+            const keyCol = `col${col}`
+            const keyRow = `row${col}`
             if(value == 0){
-                newValue = 2
+                newValue = 3
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
+                newMatrix[row][col] = 2
             }else if(value == 2) {
+                try {
+                    delete newBulbs[keyCol][`${row}${col}`]
+                    delete newBulbs[keyRow][`${row}${col}`]
+                } catch (error) {
+                    console.log(error)
+                }
                 newValue = 0
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
+                newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
+                newMatrix[row][col] = 0
             }
 
-            // call and flood and fill
-            newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
-            newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
-            newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
-            newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
-
-
             for(let row=0; row < newMatrix.length; row++){
-                console.log("valueeeee")
                 for(let col=0; col < newMatrix[row].length; col++) {
                     const value = newMatrix[row][col]
                     
-                    if(value == 2){ console.log("value") }
+                    if(value == 2){ 
+                        const newValue = 3
+                        newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["left"])
+                        newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["right"])
+                        newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["top"])
+                        newMatrix = floodFill(row, col, newMatrix, newValue, DIRECTIONS["bottom"])
+                        newMatrix[row][col] = 2
+                    }
                 }
             }
 
+            // call and flood and fill
             setMatrix(newMatrix)
         }
     }
